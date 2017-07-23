@@ -3,7 +3,7 @@
  *
  * this file is part of GLADDB
  *
- * Copyright (c) 2012, 2013, 2014 Brett Sheffield <brett@gladserv.com>
+ * Copyright (c) 2012-2014, 2017 Brett Sheffield <brett@gladserv.com>
  * Copyright (c) 2017 Gavin Henry <ghenry@suretec.co.uk>, Suretec 
  *  Systems Ltd. T/A SureVoIP
  *
@@ -245,16 +245,34 @@ int db_fetch_all(db_t *db, char *sql, field_t *filter, row_t **rows, int *rowc)
                 return db_fetch_all_ldap(db, sql, filter, rows, rowc);
         }
 #endif
-#ifndef _NLMDB
-        if (strcmp(db->type, "lmdb") == 0) {
-                return db_fetch_all_lmdb(db, sql, filter, rows, rowc);
-        }
-#endif
         syslog(LOG_ERR,
             "Invalid database type '%s' passed to db_fetch_all()\n",
             db->type);
         return -1;
 }
+
+int db_fetch_keyval(db_t *db, keyval_t *key)
+{
+        dberrcode = NULL;
+        dberror = NULL;
+
+        if (db == NULL) {
+                syslog(LOG_ERR,
+                        "No database info supplied to db_fetch_keyval()\n");
+                return -1;
+        }
+#ifndef _NLMDB
+        if (strcmp(db->type, "lmdb") == 0) {
+                return db_get_lmdb(db, NULL, key);
+        }
+#endif
+        syslog(LOG_ERR,
+            "Invalid database type '%s' passed to db_fetch_keyval()\n",
+            db->type);
+        return -1;
+}
+
+
 
 /* database agnostic resource insertion */
 int db_insert(db_t *db, char *resource, keyval_t *data)

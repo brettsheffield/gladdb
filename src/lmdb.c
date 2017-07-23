@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2017 Gavin Henry <ghenry@suretec.co.uk>, Suretec 
  *  Systems Ltd. T/A SureVoIP
+ * Copyright (c) 2017 Brett Sheffield <brett@gladserv.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,36 +90,35 @@ int db_disconnect_lmdb(db_t *db)
 	return EXIT_SUCCESS;
 }
 
-int db_fetch_all_lmdb(db_t *db, char *query, field_t *filter,
-		      row_t **rows, int *rowc)
-{
-	return EXIT_SUCCESS;
-}
-
 /* lmdb get */
 int db_get_lmdb(db_t *db, char *resource, keyval_t *db_data)
 {
-	int rc;
+	int rv = 0;
 	MDB_val key, data;
 
 	MDB_env *env = db->conn;
 
 	MDB_txn *txn = NULL;
-	MDB_dbi dbi = NULL;
+	MDB_dbi dbi = 0;
 
 	/*  Convert our key. */
-	key.mv_size = sizeof(db_data->key);
+	key.mv_size = strlen(db_data->key) + 1;
 	key.mv_data = db_data->key;
 
 	/*  Make sure readonly */
-	E(mdb_txn_begin(env, NULL, MDB_RDONLY, &txn));
-	E(mdb_dbi_open(txn, NULL, 0, &dbi));
+	mdb_txn_begin(env, NULL, MDB_RDONLY, &txn);
+	mdb_dbi_open(txn, NULL, 0, &dbi);
 
-	E(mdb_get(txn, dbi, &key, &data));
+	data.mv_data = NULL;
+	rv = mdb_get(txn, dbi, &key, &data);
 	mdb_txn_abort(txn);
 
-	/*  all good, save data. */
-	db_data->value = data.mv_data;
+	if (rv == MDB_NOTFOUND)
+		db_data->value = NULL;
+	else if (rv != 0)
+		return EXIT_FAILURE;
+	else
+		db_data->value = data.mv_data;
 
 	return EXIT_SUCCESS;
 }
@@ -176,7 +176,7 @@ int db_delete_lmdb(db_t *db, char *resource, keyval_t *db_data)
 	int rc;
 	MDB_txn *txn = NULL;
 	MDB_val key;
-	MDB_dbi dbi = NULL;
+	MDB_dbi dbi = 0;
 	MDB_env *env = db->conn;
 
 	/*  Convert */

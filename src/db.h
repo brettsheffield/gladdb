@@ -3,7 +3,7 @@
  *
  * this file is part of GLADDB
  *
- * Copyright (c) 2012, 2013 Brett Sheffield <brett@gladserv.com>
+ * Copyright (c) 2012, 2013, 2017 Brett Sheffield <brett@gladserv.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,6 +61,7 @@ int db_disconnect(db_t *db);
 int db_exec_sql(db_t *db, char *sql);
 int db_fetch_all(db_t *db, char *sql, field_t *filter, row_t **rows,
         int *rowc);
+int db_fetch_keyval(db_t *db, keyval_t *key);
 int db_insert(db_t *db, char *resource, keyval_t *data);
 int db_insert_sql(db_t *db, char *resource, keyval_t *data);
 field_t * db_field(row_t *row, char *fname);
