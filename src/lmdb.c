@@ -5,7 +5,7 @@
  *
  * Copyright (c) 2017 Gavin Henry <ghenry@suretec.co.uk>, Suretec 
  *  Systems Ltd. T/A SureVoIP
- * Copyright (c) 2017 Brett Sheffield <brett@gladserv.com>
+ * Copyright (c) 2017-2018 Brett Sheffield <brett@gladserv.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
  */
 
 #define _GNU_SOURCE
+#define LMDB_MAXDBS 128 /* TODO: make this a configuration option */
 #include "db.h"
 #include "lmdb.h"
 #include <stdio.h>
@@ -51,6 +52,9 @@ int db_connect_lmdb(db_t *db)
 	E(mdb_env_create(&env));
 	syslog(LOG_DEBUG, "mdb_env_create() successful in: %s\n",
 	       __func__);
+
+	/* using named databases, so set maximum */
+	E(mdb_env_set_maxdbs(env, LMDB_MAXDBS));
 
 	/*  Set the maximum number of threads/reader slots for the environment. 
 	 *  Default is 126, but set to make sure */
@@ -107,7 +111,11 @@ int db_get_lmdb(db_t *db, char *resource, keyval_t *db_data)
 
 	/*  Make sure readonly */
 	mdb_txn_begin(env, NULL, MDB_RDONLY, &txn);
-	mdb_dbi_open(txn, NULL, 0, &dbi);
+
+	if (strcmp(db->host, "*") == 0)
+		mdb_dbi_open(txn, NULL, 0, &dbi);
+	else
+		mdb_dbi_open(txn, db->host, 0, &dbi); /* named database */
 
 	data.mv_data = NULL;
 	rv = mdb_get(txn, dbi, &key, &data);
