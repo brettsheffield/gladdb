@@ -112,7 +112,7 @@ int db_get_lmdb(db_t *db, char *resource, keyval_t *db_data)
 	/*  Make sure readonly */
 	mdb_txn_begin(env, NULL, MDB_RDONLY, &txn);
 
-	if (strcmp(db->host, "*") == 0)
+	if (db->host && strcmp(db->host, "*") == 0)
 		mdb_dbi_open(txn, NULL, 0, &dbi);
 	else
 		mdb_dbi_open(txn, db->host, 0, &dbi); /* named database */
