@@ -143,7 +143,7 @@ int db_insert_lmdb(db_t *db, char *resource, keyval_t *db_data)
 	/*  We need to convert/set keyval_t to MDB_val */
 	MDB_val key, data;
 
-	key.mv_size = sizeof(db_data->key);
+	key.mv_size = sizeof(db_data->key) + 1;
 	key.mv_data = db_data->key;
 
 	data.mv_size = sizeof(db_data->value);
