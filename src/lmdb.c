@@ -115,7 +115,7 @@ int db_get_lmdb(db_t *db, char *resource, keyval_t *db_data)
 	mdb_txn_begin(env, NULL, MDB_RDONLY, &txn);
 	mdb_dbi_open(txn, db->host, 0, &dbi);
 	rv = mdb_cursor_open(txn, dbi, &cur);
-	rv = mdb_cursor_get(cur, &key, &data, MDB_FIRST);
+	rv = mdb_cursor_get(cur, &key, &data, MDB_SET);
 	mdb_txn_abort(txn);
 	db_data->value = (rv == MDB_NOTFOUND) ? NULL : data.mv_data;
 	mdb_cursor_close(cur);
