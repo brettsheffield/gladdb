@@ -3,8 +3,8 @@
  *
  * this file is part of GLADDB
  *
- * Copyright (c) 2017 Gavin Henry <ghenry@suretec.co.uk>, Suretec 
- *  Systems Ltd. T/A SureVoIP
+ * Copyright (c) 2017 Gavin Henry <ghenry@suretec.co.uk>
+ * Copyright (c) 2018 Brett Sheffield <brett@gladserv.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,14 +27,63 @@
 #include <stdlib.h>
 #include <string.h>
 
-int lmdb_test_db_connect_lmdb(db_t *db);
-int lmdb_test_db_disconnect_lmdb(db_t *db);
-int lmdb_test_db_fetch_all_lmdb(db_t *db);
-int lmdb_test_db_get_lmdb(db_t *db);
-int lmdb_test_db_insert_lmdb(db_t *db);
-int lmdb_test_db_delete_lmdb(db_t *db);
+/* test connect to lmdb */
+int lmdb_test_db_connect_lmdb(db_t *db)
+{
+	int rc;
+	rc = db_connect_lmdb(db);
+	return rc;
+}
 
-int main(void)
+/* test disconnect from lmdb */
+int lmdb_test_db_disconnect_lmdb(db_t *db)
+{
+	int rc;
+	rc = db_disconnect_lmdb(db);
+	return rc;
+}
+
+/* test lmdb fetch all */
+int lmdb_test_db_fetch_all_lmdb(db_t *db)
+{
+	return EXIT_SUCCESS;
+}
+
+/* test lmdb get */
+int lmdb_test_db_get_lmdb(db_t *db)
+{
+	int rc;
+	keyval_t orig_data = { "SureVoIP", "rules!", NULL };
+	keyval_t req_data = { "SureVoIP", NULL, NULL };
+	rc = db_get_lmdb(db, NULL, &req_data);
+	printf("got value: %s for key: %s...",
+	       req_data.value, req_data.key);
+
+	rc = strcmp(req_data.value, orig_data.value);
+
+	return rc;
+}
+
+/* test lmdb put */
+int lmdb_test_db_insert_lmdb(db_t *db)
+{
+	int rc;
+	keyval_t data = { "SureVoIP", "rules!", NULL };
+	printf("inserting key: %s, value: %s...", data.key, data.value);
+	rc = db_insert_lmdb(db, NULL, &data);
+	return rc;
+}
+
+/* test lmdb delete */
+int lmdb_test_db_delete_lmdb(db_t *db)
+{
+	int rc;
+	keyval_t data = { "SureVoIP", NULL, NULL };
+	rc = db_delete_lmdb(db, NULL, &data);
+	return rc;
+}
+
+int main()
 {
 	int rc;
 	struct db_t *db = calloc(1, sizeof(db_t));
@@ -45,7 +94,6 @@ int main(void)
 	db->conn = NULL;
 	db->next = NULL;
 
-	/*  Messy. Loop all these? Consider Unity C test harness later. */
 	printf("lmdb_test_db_connect_lmdb...");
 	rc = lmdb_test_db_connect_lmdb(db);
 	if (rc != 0)
@@ -77,66 +125,8 @@ int main(void)
 	printf("OK\n");
 
 cleanup_main:
-	printf("\n");
+	if (rc != 0)
+		printf("FAIL\n");
 	free(db);
-	return rc;
-}
-
-/* test connect to lmdb */
-int lmdb_test_db_connect_lmdb(db_t *db)
-{
-	int rc;
-	rc = db_connect_lmdb(db);
-	return rc;
-}
-
-/* test disconnect from lmdb */
-int lmdb_test_db_disconnect_lmdb(db_t *db)
-{
-	int rc;
-	rc = db_disconnect_lmdb(db);
-	return rc;
-}
-
-/* test lmdb fetch all */
-int lmdb_test_db_fetch_all_lmdb(db_t *db)
-{
-	return EXIT_SUCCESS;
-}
-
-/* test lmdb get */
-int lmdb_test_db_get_lmdb(db_t *db)
-{
-	int rc, ret;
-	keyval_t orig_data = { "SureVoIP", "rules!", NULL };
-	keyval_t req_data = { "SureVoIP", NULL, NULL };
-	rc = db_get_lmdb(db, NULL, &req_data);
-	printf("got value: %s for key: %s...",
-	       req_data.value, req_data.key);
-
-	ret = strcmp(req_data.value, orig_data.value);
-	if (ret == 0) {
-		return ret;
-	}
-
-	return rc;
-}
-
-/* test lmdb put */
-int lmdb_test_db_insert_lmdb(db_t *db)
-{
-	int rc;
-	keyval_t data = { "SureVoIP", "rules!", NULL };
-	printf("inserting key: %s, value: %s...", data.key, data.value);
-	rc = db_insert_lmdb(db, NULL, &data);
-	return rc;
-}
-
-/* test lmdb delete */
-int lmdb_test_db_delete_lmdb(db_t *db)
-{
-	int rc;
-	keyval_t data = { "SureVoIP", NULL, NULL };
-	rc = db_delete_lmdb(db, NULL, &data);
 	return rc;
 }
