@@ -74,6 +74,10 @@ int db_connect_lmdb(db_t *db)
 	E(mdb_env_open(env, db->db, MDB_NOSUBDIR, 0664));
 	syslog(LOG_DEBUG, "mdb_env_open() successful in: %s\n", __func__);
 
+	/* using named database? */
+	if (db->host && strcmp(db->host, "*") == 0)
+		db->host = NULL;
+
 	/*  Save the handle */
 	db->conn = env;
 
@@ -99,9 +103,8 @@ int db_get_lmdb(db_t *db, char *resource, keyval_t *db_data)
 {
 	int rv = 0;
 	MDB_val key, data;
-
+	MDB_cursor *cur;
 	MDB_env *env = db->conn;
-
 	MDB_txn *txn = NULL;
 	MDB_dbi dbi = 0;
 
@@ -109,26 +112,15 @@ int db_get_lmdb(db_t *db, char *resource, keyval_t *db_data)
 	key.mv_size = strlen(db_data->key) + 1;
 	key.mv_data = db_data->key;
 
-	/*  Make sure readonly */
 	mdb_txn_begin(env, NULL, MDB_RDONLY, &txn);
-
-	if (db->host && strcmp(db->host, "*") == 0)
-		mdb_dbi_open(txn, NULL, 0, &dbi);
-	else
-		mdb_dbi_open(txn, db->host, 0, &dbi); /* named database */
-
-	data.mv_data = NULL;
-	rv = mdb_get(txn, dbi, &key, &data);
+	mdb_dbi_open(txn, db->host, 0, &dbi);
+	rv = mdb_cursor_open(txn, dbi, &cur);
+	rv = mdb_cursor_get(cur, &key, &data, MDB_FIRST);
 	mdb_txn_abort(txn);
+	db_data->value = (rv == MDB_NOTFOUND) ? NULL : data.mv_data;
+	mdb_cursor_close(cur);
 
-	if (rv == MDB_NOTFOUND)
-		db_data->value = NULL;
-	else if (rv != 0)
-		return EXIT_FAILURE;
-	else
-		db_data->value = data.mv_data;
-
-	return EXIT_SUCCESS;
+	return (rv == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 /* lmdb put */

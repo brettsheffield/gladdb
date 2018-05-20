@@ -53,12 +53,11 @@ int lmdb_test_db_fetch_all_lmdb(db_t *db)
 int lmdb_test_db_get_lmdb(db_t *db)
 {
 	int rc;
+
 	keyval_t orig_data = { "SureVoIP", "rules!", NULL };
 	keyval_t req_data = { "SureVoIP", NULL, NULL };
 	rc = db_get_lmdb(db, NULL, &req_data);
-	printf("got value: %s for key: %s...",
-	       req_data.value, req_data.key);
-
+	printf("got value: %s for key: %s...", req_data.value, req_data.key);
 	rc = strcmp(req_data.value, orig_data.value);
 
 	return rc;
