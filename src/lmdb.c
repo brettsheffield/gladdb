@@ -5,7 +5,7 @@
  *
  * Copyright (c) 2017 Gavin Henry <ghenry@suretec.co.uk>, Suretec 
  *  Systems Ltd. T/A SureVoIP
- * Copyright (c) 2017-2018 Brett Sheffield <brett@gladserv.com>
+ * Copyright (c) 2017-2019 Brett Sheffield <brett@gladserv.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
