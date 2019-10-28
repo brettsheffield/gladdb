@@ -138,7 +138,7 @@ int db_insert_lmdb(db_t *db, char *resource, keyval_t *db_data)
 	key.mv_size = strlen(db_data->key) + 1;
 	key.mv_data = db_data->key;
 
-	data.mv_size = strlen(db_data->value);
+	data.mv_size = strlen(db_data->value) + 1;
 	data.mv_data = db_data->value;
 
 	/*  Get ready */
