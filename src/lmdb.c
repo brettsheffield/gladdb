@@ -135,10 +135,10 @@ int db_insert_lmdb(db_t *db, char *resource, keyval_t *db_data)
 	/*  We need to convert/set keyval_t to MDB_val */
 	MDB_val key, data;
 
-	key.mv_size = sizeof(db_data->key) + 1;
+	key.mv_size = strlen(db_data->key) + 1;
 	key.mv_data = db_data->key;
 
-	data.mv_size = sizeof(db_data->value);
+	data.mv_size = strlen(db_data->value);
 	data.mv_data = db_data->value;
 
 	/*  Get ready */
@@ -163,6 +163,7 @@ int db_insert_lmdb(db_t *db, char *resource, keyval_t *db_data)
 	E(mdb_put(txn, dbi, &key, &data, 0));
 	E(mdb_txn_commit(txn));
 	E(mdb_env_stat(env, &mst));
+	mdb_dbi_close(env, dbi);
 
 	return EXIT_SUCCESS;
 }
